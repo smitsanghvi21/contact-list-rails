@@ -1,5 +1,7 @@
 class FriendsController < ApplicationController
   before_action :set_friend, only: %i[ show edit update destroy ]
+  before_action :authenticate_user!, except: [:index, :show]
+  before_action :correct_user, only: [:update, :edit, :destroy]
 
   # GET /friends or /friends.json
   def index
@@ -12,17 +14,20 @@ class FriendsController < ApplicationController
 
   # GET /friends/new
   def new
-    @friend = Friend.new
+    @friend = current_user.friends.build
   end
 
   # GET /friends/1/edit
   def edit
+    
   end
 
+  def correct_user
+    @friend= current_user.friends.find_by(:id[params[:id]])
+  end
   # POST /friends or /friends.json
   def create
-    @friend = Friend.new(friend_params)
-
+    @friend = current_user.friends.build(friend_params)
     respond_to do |format|
       if @friend.save
         format.html { redirect_to @friend, notice: "Friend was successfully created." }
@@ -57,13 +62,14 @@ class FriendsController < ApplicationController
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_friend
-      @friend = Friend.find(params[:id])
-    end
 
-    # Only allow a list of trusted parameters through.
-    def friend_params
-      params.require(:friend).permit(:first_name, :last_name, :phone_number)
-    end
+  # Use callbacks to share common setup or constraints between actions.
+  def set_friend
+    @friend = Friend.find(params[:id])
+  end
+
+  # Only allow a list of trusted parameters through.
+  def friend_params
+    params.require(:friend).permit(:first_name, :last_name, :phone_number, :user_id)
+  end
 end
